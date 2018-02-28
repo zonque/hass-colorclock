@@ -16,6 +16,7 @@ CONF_HOUR_LIGHT = 'hour_light'
 CONF_MINUTE_LIGHT = 'minute_light'
 CONF_SECOND_LIGHT = 'second_light'
 CONF_24H_MODE = '24h_mode'
+CONF_CCW = 'ccw'
 CONF_ANGLE_OFFSET = 'angle_offset'
 
 PLATFORM_SCHEMA = vol.Schema({
@@ -24,6 +25,7 @@ PLATFORM_SCHEMA = vol.Schema({
     vol.Optional(CONF_MINUTE_LIGHT): cv.entity_id,
     vol.Optional(CONF_SECOND_LIGHT): cv.entity_id,
     vol.Optional(CONF_24H_MODE): cv.boolean,
+    vol.Optional(CONF_CCW): cv.boolean,
     vol.Optional(CONF_ANGLE_OFFSET): vol.All(vol.Coerce(int), vol.Range(min=0, max=359)),
 })
 
@@ -34,19 +36,22 @@ def async_setup_platform(hass, config, async_add_devices, discovery_info=None):
     minute_light_id = config.get(CONF_MINUTE_LIGHT, None)
     second_light_id = config.get(CONF_SECOND_LIGHT, None)
     twentyfour_mode = config.get(CONF_24H_MODE, False)
+    ccw = config.get(CONF_CCW, False)
     angle_offset = config.get(CONF_ANGLE_OFFSET, 0)
 
-    scene = ColorClockScene(hass, hour_light_id, minute_light_id, second_light_id, twentyfour_mode, angle_offset)
+    scene = ColorClockScene(hass, hour_light_id, minute_light_id, second_light_id,
+                            twentyfour_mode, ccw, angle_offset)
     async_add_devices([scene])
     return True
 
 class ColorClockScene(Scene):
-    def __init__(self, hass, hour_light_id, minute_light_id, second_light_id, twentyfour_mode, angle_offset):
+    def __init__(self, hass, hour_light_id, minute_light_id, second_light_id, twentyfour_mode, ccw, angle_offset):
         self.hass = hass
         self._hour_light_id = hour_light_id
         self._minute_light_id = minute_light_id
         self._second_light_id = second_light_id
         self._twentyfour_mode = twentyfour_mode
+        self._ccw = ccw
         self._angle_offset = angle_offset
 
     @property
@@ -57,7 +62,10 @@ class ColorClockScene(Scene):
         if not light.is_on(self.hass, entity_id):
             return
 
-        value = 1. - ((value + (self._angle_offset / 360.)) % 1.)
+        if self._ccw:
+            value = 1. - value
+
+        value = (value + (self._angle_offset / 360.)) % 1.
         rgb = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(value, 1, 1))
         logging.debug("Setting light %s to %s, value=%.2f", entity_id, rgb, value)
         light.turn_on(self.hass, entity_id=entity_id, rgb_color=rgb)

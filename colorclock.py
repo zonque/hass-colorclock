@@ -63,9 +63,9 @@ class ColorClockScene(Scene):
             return
 
         if self._ccw:
-            value = 1. - value
+            value = 1 - value
 
-        value = (value + (self._angle_offset / 360.)) % 1.
+        value = (value + (self._angle_offset / 360)) % 1
         rgb = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(value, 1, 1))
         logging.debug("Setting light %s to %s, value=%.2f", entity_id, rgb, value)
         light.turn_on(self.hass, entity_id=entity_id, rgb_color=rgb)
@@ -78,16 +78,16 @@ class ColorClockScene(Scene):
 
         if self._hour_light_id is not None:
             if self._twentyfour_mode:
-                value = ssm / (24. * 3600.)
+                value = ssm / (24 * 3600)
             else:
-                value = (ssm % (12 * 3600)) / (12. * 3600.)
+                value = (ssm % (12 * 3600)) / (12 * 3600)
 
             self.set_light(self._hour_light_id, value)
 
         if self._minute_light_id is not None:
-            value = (ssm % 3600) / 3600.
+            value = (ssm % 3600) / 3600
             self.set_light(self._minute_light_id, value)
 
         if self._second_light_id is not None:
-            value = (ssm % 60) / 60.
+            value = (ssm % 60) / 60
             self.set_light(self._second_light_id, value)

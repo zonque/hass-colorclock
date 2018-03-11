@@ -73,19 +73,21 @@ class ColorClockScene(Scene):
     @asyncio.coroutine
     def async_activate(self):
         now = datetime.datetime.now()
+        # seconds since midnight
+        ssm = (now.hour * 3600) + (now.minute * 60) + now.second
 
         if self._hour_light_id is not None:
             if self._twentyfour_mode:
-                value = now.hour / 24.
+                value = ssm / (24. * 3600.)
             else:
-                value = (now.hour % 12) / 12.
+                value = (ssm % (12 * 3600)) / (12. * 3600.)
 
             self.set_light(self._hour_light_id, value)
 
         if self._minute_light_id is not None:
-            value = now.minute / 60.
+            value = (ssm % 3600) / 3600.
             self.set_light(self._minute_light_id, value)
 
         if self._second_light_id is not None:
-            value = now.second / 60.
+            value = (ssm % 60) / 60.
             self.set_light(self._second_light_id, value)

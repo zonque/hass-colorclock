@@ -80,14 +80,15 @@ class ColorClockScene(Scene):
             if self._twentyfour_mode:
                 value = ssm / (24 * 3600)
             else:
-                value = (ssm % (12 * 3600)) / (12 * 3600)
+                value = (ssm / (12 * 3600)) % 1
 
             self.set_light(self._hour_light_id, value)
 
         if self._minute_light_id is not None:
-            value = (ssm % 3600) / 3600
+            value = (ssm / 3600) % 1
             self.set_light(self._minute_light_id, value)
 
         if self._second_light_id is not None:
-            value = (ssm % 60) / 60
+            value = (ssm / 60) % 1
             self.set_light(self._second_light_id, value)
+

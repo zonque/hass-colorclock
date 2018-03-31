@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import colorsys
 import datetime
 
 import voluptuous as vol
@@ -65,10 +64,9 @@ class ColorClockScene(Scene):
         if self._ccw:
             value = 1 - value
 
-        value = (value + (self._angle_offset / 360)) % 1
-        rgb = tuple(int(i * 255) for i in colorsys.hsv_to_rgb(value, 1, 1))
-        logging.debug("Setting light %s to %s, value=%.2f", entity_id, rgb, value)
-        light.turn_on(self.hass, entity_id=entity_id, rgb_color=rgb)
+        hs = [ ((value * 360) + self._angle_offset) % 360, 100 ]
+        logging.debug("Setting light %s to %s, value=%.2f", entity_id, hs, value)
+        light.turn_on(self.hass, entity_id=entity_id, hs_color=hs)
 
     @asyncio.coroutine
     def async_activate(self):

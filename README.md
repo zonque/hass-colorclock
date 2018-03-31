@@ -13,6 +13,10 @@ The HSV color circle is used to map the time values into colors.
 * If it doesn't exist yet, create a sub-folder in your configuration directory called `custom_components/scene`
 * Download the [colorclock.py](colorclock.py) file and copy it to this sub-folder
 
+## Prerequisites
+
+This component requires at hass >= 0.66.
+
 ## Configuration
 
 Add the following snippet to your `configuration.yaml`, or any file that is included by it:

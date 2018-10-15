@@ -5,9 +5,9 @@ import datetime
 import voluptuous as vol
 
 from homeassistant.components.scene import Scene
-from homeassistant.const import CONF_PLATFORM
+from homeassistant.const import CONF_PLATFORM, CONF_NAME, ATTR_ENTITY_ID, SERVICE_TURN_ON
+from homeassistant.components.light import (is_on, ATTR_HS_COLOR, DOMAIN as LIGHT_DOMAIN)
 import homeassistant.helpers.config_validation as cv
-import homeassistant.components.light as light
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -58,18 +58,23 @@ class ColorClockScene(Scene):
         return "Color Clock"
 
     def set_light(self, entity_id, value):
-        if not light.is_on(self.hass, entity_id):
+        if not is_on(self.hass, entity_id):
             return
 
         if self._ccw:
             value = 1 - value
 
         hs = [ ((value * 360) + self._angle_offset) % 360, 100 ]
-        logging.debug("Setting light %s to %s, value=%.2f", entity_id, hs, value)
-        light.turn_on(self.hass, entity_id=entity_id, hs_color=hs)
+        _LOGGER.debug("Setting light %s to %s, value=%.2f", entity_id, hs, value)
 
-    @asyncio.coroutine
-    def async_activate(self):
+        service_data = {
+          ATTR_ENTITY_ID: entity_id,
+          ATTR_HS_COLOR: hs,
+        }
+
+        self.hass.services.call(LIGHT_DOMAIN, SERVICE_TURN_ON, service_data)
+
+    def activate(self):
         now = datetime.datetime.now()
         # seconds since midnight
         ssm = (now.hour * 3600) + (now.minute * 60) + now.second
